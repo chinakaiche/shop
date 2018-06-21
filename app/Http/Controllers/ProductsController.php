@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Exceptions\InvalidRequestException;
 
 class ProductsController extends Controller
 {
@@ -13,7 +14,7 @@ class ProductsController extends Controller
         $builder = Product::query()->where('on_sale',true);
         //判断是否有提交search参数,如果有就赋值给$search变量
         if ($search = $request->input('search', '')) {
-            $like = $search.'%';
+            $like = '%'.$search.'%';
             // 模糊搜索商品标题、商品详情、SKU 标题、SKU描述
             $builder->where(function ($query) use ($like) {
                 $query->where('title', 'like', $like)
@@ -49,4 +50,13 @@ class ProductsController extends Controller
         ]);
 
     }
+    public function show(Product $product,Request $request)
+    {
+        if(!$product->on_sale){
+            throw new InvalidRequestException('商品未上架');
+        }
+
+        return view('products.show',compact('product'));
+    }
+
 }
